@@ -18,8 +18,9 @@ import sys
 # Dictionary of memory location updates, this is used to generate the chain of opcode dependencies
 memory = {}  # type: Dict[int, List]
 
+
 # Generate a new BitVec before each operation, this represents the next value at this memory location
-def gen_new_mem(x: int) -> int:
+def gen_new_mem(x: int):
     if x not in memory:
         memory[x] = [z3.BitVecVal(0, 32)]
     else:
@@ -47,32 +48,31 @@ with open('./input.txt') as fd:
     # The assumptions mentioned before are important here
     pc = 0
     while instrs[pc] != 99:  # Halt
+        src1_l = instrs[pc + 1]
+        src2_l = instrs[pc + 2]
+        dest_l = instrs[pc + 3]
+        # Find and save the latest updates to each src location
+        src1 = memory[src1_l][-1]
+        src2 = memory[src2_l][-1]
+        # Now generate a new update for this location
+        gen_new_mem(dest_l)
         if instrs[pc] == 1:  # Add
-            print(f'add {instrs[pc+1]} {instrs[pc+2]} {instrs[pc+3]}')
-            # Find and save the latest updates to each src location
-            src1 = memory[instrs[pc+1]][-1]
-            src2 = memory[instrs[pc+2]][-1]
-            # Now generate a new update for this location
-            gen_new_mem(instrs[pc+3])
-            s.add(memory[instrs[pc+3]][-1] == src1 + src2)
-            pc += 4
+            print(f'add  {src1_l} {src2_l} {dest_l}')
+            s.add(memory[dest_l][-1] == src1 + src2)
         elif instrs[pc] == 2:  # Multiply
-            print(f'mult {instrs[pc+1]} {instrs[pc+2]} {instrs[pc+3]}')
-            # Find and save the latest updates to each src location
-            src1 = memory[instrs[pc+1]][-1]
-            src2 = memory[instrs[pc+2]][-1]
-            # Now generate a new update for this location
-            gen_new_mem(instrs[pc+3])
-            s.add(memory[instrs[pc+3]][-1] == src1 * src2)
-            pc += 4
+            print(f'mult {src1_l} {src2_l} {dest_l}')
+            s.add(memory[dest_l][-1] == src1 * src2)
+        pc += 4
     print('end')
 
     # Constrain the last update to memory location 0 to the problem statement
     # Mine was 19690720
     s.add(memory[0][-1] == sys.argv[1])
 
+    # List all the constraints, should match instructions closely
     pp.pprint(s.assertions())
 
+    # Check if the problem is "sat"isfiable, if so print out the parts of the model we care about
     if s.check() == z3.sat:
         print('sat')
         m = s.model()
