@@ -25,18 +25,7 @@ def walk_the_wire(wire: List[Tuple[str, int]]) -> List[Tuple[int, int]]:
 path1 = walk_the_wire(wire1)
 path2 = walk_the_wire(wire2)
 
-path1 = list(set(path1))
-path2 = list(set(path2))
+intersection = set(path1) & set(path2)
 
-paths = path1 + path2
-
-path_dict = {}
-manhattans = []
-for p in paths:
-    if p not in path_dict.keys():
-        path_dict[p] = True
-    else:
-        manhattans.append(abs(p[0]) + abs(p[1]))
-
-manhattans.sort()
-print(manhattans[0])
+manhattans = [abs(x) + abs(y) for x, y in intersection]
+print(min(manhattans))
