@@ -10,6 +10,7 @@ import threading
 import tracemalloc
 
 import sys
+import os
 import readchar
 
 class program(threading.Thread):
@@ -59,9 +60,8 @@ class program(threading.Thread):
             state_mode = False
             iters = 0
             while (get_mem(pc) % 100) != 99:  # and iters < 10:  # Halt
-                if memory[2666] > 20:
-                    # memory[2665] = 0
-                    memory[2666] = 1
+                # if memory[2666] > 20:
+                #     memory[2666] = 1
                 iters += 1
                 instr = get_mem(pc)
                 opcode = instr % 100
@@ -88,9 +88,9 @@ class program(threading.Thread):
                         num = self.state
                         state_mode = False
                     else:
-                        num = 0
+                        #num = 0
                         #print(f'waiting on {self.q_in}')
-                        #num = self.q_in.get(block=True)
+                        num = self.q_in.get(block=True)
                         #print(f'pressed {num}')
                         #for i in range(8):
                             #print(f'mem[{i}]: {memory[2660+i]}')
@@ -203,6 +203,8 @@ ball = (-1, -1)
 paddle = (-1, -1)
 last_action = None
 scores = []
+paddle_update = False
+ball_update = False
 while True: # t.is_alive():
 
     # if last_action == 0:
@@ -234,6 +236,30 @@ while True: # t.is_alive():
         scores.append(output)
 
     screen[(x, y)] = tile_id
+    if tile_id == 4:
+        ball = (x, y)
+        ball_update = True
+    if tile_id == 3:
+        paddle = (x, y)
+        paddle_update = True
+
+    if ball_update and paddle_update:
+        in_val = 0
+        if ball[0] > paddle[0]:
+            in_val = 1
+        elif ball[0] < paddle[0]:
+            in_val = -1
+        else:
+            in_val = 0
+        print(f'\033[0;0H')
+        print_screen(screen)
+        print(f'q_in: {in_val}')
+        q_in.put(in_val)
+        if in_val != 0:
+            paddle_update = False
+        ball_update = False
+
+
     # # print(f'({x}, {y}) = {tile_id}')
     # if tile_id == 4:
     #     print(f'> ({x}, {y}) = {tile_id}')
@@ -262,7 +288,6 @@ while True: # t.is_alive():
     #     print(f'put in: {diff}')
     #     pp.pprint(list(q_in.queue))
 
-    print_screen(screen)
     # 2668
     #print(list(screen.values()).count(2)*8)
 
