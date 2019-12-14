@@ -2,7 +2,10 @@
 
 # Notes:
 #  - This may be a naive approach to solving with Z3, but it works!
-#  - Each reaction is converted into an assertion
+#  - Each reaction is converted into an assertion constraining each input chemical to be equal the output
+#      To be more accurate, we want the input chemmical to be a multiple of the required output chemicals needed
+#      There's probably a better way to describe that, but it boils down to integer division and modulo
+#      I think this works, but I'm not sure why (output_multiple * left_input == right_output * input_multiple) fails
 
 
 import z3
@@ -63,6 +66,7 @@ before_fuel = s.assertions()  # Save off model before constraining fuel for part
 s.add(get_sum('FUEL') == 1)
 
 # print(s.assertions())
+# print(z3.simplify(z3.And(s.assertions())))
 
 # Check if we found a solution or not
 result = s.check()
