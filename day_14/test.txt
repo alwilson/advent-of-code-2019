@@ -1,0 +1,4 @@
+3 ORE => 2 A
+4 ORE => 3 B
+3 A, 2 B => 1 AB
+2 AB => 1 FUEL
